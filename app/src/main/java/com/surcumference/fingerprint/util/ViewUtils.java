@@ -2,6 +2,7 @@ package com.surcumference.fingerprint.util;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.res.Resources;
 import android.graphics.Rect;
 import android.os.Build;
@@ -12,6 +13,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import android.view.Window;
 import android.widget.CheckBox;
 import android.widget.CheckedTextView;
 import android.widget.EditText;
@@ -240,8 +242,11 @@ public class ViewUtils {
         return view.getClass().getName();
     }
 
-    public static String getViewInfo(View view) {
+    public static String getViewInfo(@Nullable View view) {
         StringBuffer stringBuffer = new StringBuffer();
+        if (view == null) {
+            return "null";
+        }
         stringBuffer.append(String.valueOf(view));
         stringBuffer.append(" type:").append(getViewBaseDesc(view));
         stringBuffer.append(" clz:").append(view.getClass().getName());
@@ -253,6 +258,7 @@ public class ViewUtils {
         int []location = new int[]{0,0};
         view.getLocationOnScreen(location);
         stringBuffer.append(" cor x:").append(location[0]).append(" y:").append(location[1]);
+        stringBuffer.append(" w:").append(view.getWidth()).append(" h:").append(view.getHeight());
         CharSequence desc = view.getContentDescription();
         if (!TextUtils.isEmpty(desc)) {
             stringBuffer.append(" desc:").append(desc);
@@ -261,6 +267,9 @@ public class ViewUtils {
         if (view instanceof ViewGroup) {
             stringBuffer.append(" child:").append(((ViewGroup) view).getChildCount());
         }
+        stringBuffer.append(" shownInScreen:").append(isShownInScreen(view));
+        stringBuffer.append(" viewVisibleInScreen:").append(isViewVisibleInScreen(view));
+        stringBuffer.append(" shown:").append(isShown(view));
         return stringBuffer.toString();
     }
 
@@ -309,8 +318,42 @@ public class ViewUtils {
                     outList.add(child);
                 }
             }
+            if (!outList.contains(child)) {
+                if (text.equals(String.valueOf(child.getContentDescription()))) {
+                    outList.add(child);
+                }
+            }
             if (child instanceof ViewGroup) {
                 getChildViews((ViewGroup) child, text, outList);
+            } else {
+            }
+        }
+    }
+
+    public static void getChildViewsByRegex(ViewGroup parent, String regex, List<View> outList) {
+        for (int i = parent.getChildCount() - 1; i >= 0; i--) {
+            final View child = parent.getChildAt(i);
+            if (child == null) {
+                continue;
+            }
+            if (child instanceof EditText) {
+                if (String.valueOf(((TextView) child).getText()).matches(regex)) {
+                    outList.add(child);
+                } else if (regex.equals(String.valueOf(((EditText) child).getHint()))) {
+                    outList.add(child);
+                }
+            } else if (child instanceof TextView) {
+                if (String.valueOf(((TextView) child).getText()).matches(regex)) {
+                    outList.add(child);
+                }
+            }
+            if (!outList.contains(child)) {
+                if (String.valueOf(child.getContentDescription()).matches(regex)) {
+                    outList.add(child);
+                }
+            }
+            if (child instanceof ViewGroup) {
+                getChildViewsByRegex((ViewGroup) child, regex, outList);
             } else {
             }
         }
@@ -460,7 +503,10 @@ public class ViewUtils {
         return new ArrayList<View>();
     }
 
-    public static boolean isShown(View v) {
+    public static boolean isShown(@Nullable View v) {
+        if (v == null) {
+            return false;
+        }
         Rect r = new Rect();
         v.getGlobalVisibleRect(r);
         if (r.left == 0 && r.right == 0 && r.top == 0 && r.bottom == 0) {
@@ -500,15 +546,11 @@ public class ViewUtils {
     }
 
     public static ViewGroup getTopestView(View view) {
-        return getTopestView(view, null);
-    }
-
-    private static ViewGroup getTopestView(View view, ViewGroup current) {
-        View parent = view.getRootView();
-        if (parent == null) {
-            return current;
+        ViewParent parent = view.getParent();
+        if (parent == null || !(parent instanceof ViewGroup)) {
+            return (ViewGroup) view;
         }
-        return getTopestView(parent, (ViewGroup)parent);
+        return getTopestView((View) parent);
     }
 
     public static void relayout(View view) {
@@ -545,5 +587,86 @@ public class ViewUtils {
             return findParentViewByClassNamePart((ViewGroup) parentView, classPart);
         }
         return null;
+    }
+
+    public static void setAlpha(AlertDialog dialog, float value) {
+        if (dialog == null) {
+            return;
+        }
+        Window window = dialog.getWindow();
+        if (window == null) {
+            return;
+        }
+        View view = window.getDecorView();
+        if (view == null) {
+            return;
+        }
+        view.setAlpha(value);
+    }
+
+    public static void setDimAmount(AlertDialog dialog, float value) {
+        if (dialog == null) {
+            return;
+        }
+        Window window = dialog.getWindow();
+        if (window == null) {
+            return;
+        }
+        window.setDimAmount(value);
+    }
+
+    public static View.OnClickListener getOnClickListener(View v) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+            return getOnClickListenerV14(v);
+        } else {
+            return getOnClickListenerV(v);
+        }
+    }
+
+    //Used for APIs lower than ICS (API 14)
+    private static View.OnClickListener getOnClickListenerV(View view) {
+        View.OnClickListener retrievedListener = null;
+        String viewStr = "android.view.View";
+        Field field;
+        try {
+            //noinspection JavaReflectionMemberAccess
+            field = Class.forName(viewStr).getDeclaredField("mOnClickListener");
+            retrievedListener = (View.OnClickListener) field.get(view);
+        } catch (NoSuchFieldException ex) {
+            L.e("Reflection: No Such Field.");
+        } catch (IllegalAccessException ex) {
+            L.e("Reflection: Illegal Access.");
+        } catch (ClassNotFoundException ex) {
+            L.e("Reflection: Class Not Found.");
+        }
+        return retrievedListener;
+    }
+
+    //Used for new ListenerInfo class structure used beginning with API 14 (ICS)
+    @SuppressWarnings("JavaReflectionMemberAccess")
+    @SuppressLint("PrivateApi")
+    private static View.OnClickListener getOnClickListenerV14(View view) {
+        View.OnClickListener retrievedListener = null;
+        String viewStr = "android.view.View";
+        String lInfoStr = "android.view.View$ListenerInfo";
+        try {
+            Field listenerField = Class.forName(viewStr).getDeclaredField("mListenerInfo");
+            Object listenerInfo = null;
+            if (listenerField != null) {
+                listenerField.setAccessible(true);
+                listenerInfo = listenerField.get(view);
+            }
+            Field clickListenerField = Class.forName(lInfoStr).getDeclaredField("mOnClickListener");
+            if (clickListenerField != null && listenerInfo != null) {
+                retrievedListener = (View.OnClickListener) clickListenerField.get(listenerInfo);
+            }
+        } catch (NoSuchFieldException ex) {
+            L.e("Reflection: No Such Field.");
+        } catch (IllegalAccessException ex) {
+            L.e("Reflection: Illegal Access.");
+        } catch (ClassNotFoundException ex) {
+            L.e("Reflection: Class Not Found.");
+        }
+        return retrievedListener;
     }
 }

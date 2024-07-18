@@ -112,11 +112,19 @@ public class Lang {
             case R.id.settings_title_switch:
                 return tr("启用", "啟用", "Enable");
             case R.id.settings_title_password:
-                return tr("密码", "密碼", "Password");
+                return tr("支付密码", "支付密碼", "Payment Password");
             case R.id.settings_title_no_fingerprint_icon:
                 return tr("显示指纹图标", "顯示指紋圖標", "Fingerprint Icon");
             case R.id.settings_title_donate:
                 return tr("赞助我", "贊助我", "Donate me");
+            case R.id.settings_title_advance:
+                return tr("通用设置", "一般选项", "General");
+            case R.id.settings_title_use_biometric_api:
+                return tr("使用 Biometric Api", "使用 Biometric Api", "Use Biometric Api");
+            case R.id.settings_title_start_logcat:
+                return tr("开始记录日志", "開始記錄日誌", "Start logging");
+            case R.id.settings_title_stop_logcat:
+                return tr("停止记录日志", "停止記錄日誌", "Stop logging");
             case R.id.settings_sub_title_switch_alipay:
                 return tr("启用支付宝指纹支付", "啟用支付宝指紋支付", "Enable fingerprint payment for Alipay");
             case R.id.settings_sub_title_switch_wechat:
@@ -137,8 +145,16 @@ public class Lang {
                 return tr("请输入云闪付的支付密码, 密码会加密后保存, 请放心", "請輸入雲閃付的支付密碼, 密碼會加密后保存, 請放心", "Please enter your Payment password");
             case R.id.settings_sub_title_donate:
                 return tr("如果您觉得本软件好用, 欢迎赞助, 多少都是心意", "如果您覺得本軟件好用, 歡迎贊助, 多少都是心意", "Donate me, If you like this project");
+            case R.id.settings_sub_title_advance:
+                return tr("指纹图标、Biometric Api...", "指紋圖標、Biometric Api...", "Fingerprint icon, Biometric API...");
             case R.id.settings_sub_title_update_modules_same_time:
                 return tr("将同时升级以下模块", "將同時升級以下模塊", "The following modules will be upgraded at the same time");
+            case R.id.settings_sub_title_use_biometric_api:
+                return tr("实验性, 仅 Android 9+ 可用", "實驗性, 僅 Android 9+ 可用", "Experimental, available only on Android 9+");
+            case R.id.settings_sub_title_start_logcat:
+                return tr("开始 --> 你的表演 --> 停止 --> 发送给开发者", "開始 --> 你的表演 --> 停止 --> 發送給開發者", "Start --> Payment operation --> Stop --> Send to developer");
+            case R.id.settings_sub_title_stop_logcat:
+                return tr("开始 --> 你的表演 --> 停止 --> 发送给开发者", "開始 --> 你的表演 --> 停止 --> 發送給開發者", "Start --> Payment operation --> Stop --> Send to developer");
             case R.id.fingerprint_verification:
                 return tr("请验证指纹", "請驗證指紋", "Fingerprint verification");
             case R.id.wechat_general:
@@ -194,6 +210,12 @@ public class Lang {
                 return tr("系统限制，重启后必须验证密码后才能使用指纹验证", "系統限制，重啟後必須驗證密碼後才能使用指紋驗證", "Reboot and enable fingerprint verification with your PIN");
             case R.id.toast_fingerprint_not_enable:
                 return tr("系统指纹功能未启用", "系統指紋功能未啟用", "Fingerprint verification has been closed by system");
+            case R.id.toast_fingerprint_password_enc_success:
+                return tr("支付密码加密成功", "支付密碼加密成功", "Payment password encryption successful");
+            case R.id.toast_fingerprint_password_dec_failed:
+                return tr("支付密码解密失败, 请重新设定支付密码", "支付密码解密失败, 请重新设定支付密码", "Decryption of payment password failed, please reset the payment password");
+            case R.id.toast_fingerprint_operation_cancel:
+                return tr("操作已取消", "操作已取消", "The operation has been canceled");
             case R.id.toast_password_not_set_alipay:
                 return tr("未设定支付密码，请前往設置->指紋設置中设定支付宝的支付密码", "未設定支付密碼，請前往設置 -> 指紋設置中設定支付寶的支付密碼", "Payment password not set, please goto Settings -> Fingerprint to enter you payment password");
             case R.id.toast_password_not_set_taobao:
@@ -204,16 +226,22 @@ public class Lang {
                 return tr("未设定支付密码，请前往設置->指紋設置中设定QQ的支付密码", "未設定支付密碼，請前往設置 -> 指紋設置中設定QQ的支付密碼", "Payment password not set, please goto Settings -> Fingerprint to enter you payment password");
             case R.id.toast_password_not_set_generic:
                 return tr("未设定支付密码，请前往設置->指紋設置中设定支付密码", "未設定支付密碼，請前往設置 -> 指紋設置中設定支付密碼", "Payment password not set, please goto Settings -> Fingerprint to enter you payment password");
+            case R.id.toast_password_not_set_switch_on_failed:
+                return tr("启用失败, 请先设定支付密码", "啟用失敗, 請先設定支付密碼", "Enabled failed, please set a payment password first");
             case R.id.toast_password_auto_enter_fail:
                 return tr("Oops.. 输入失败了. 请手动输入密码", "Oops.. 輸入失敗了. 請手動輸入密碼", "Oops... auto input failure, switch to manual input");
             case R.id.toast_goto_donate_page_fail_alipay:
-                return tr("调用支付宝捐赠页失败, 您可以手动转账捐赠哦, 帐号: " + Constant.AUTHOR_ALIPAY, "調用支付寶捐贈頁失敗, 您可以手動轉賬捐贈哦, 帳號: " + Constant.AUTHOR_ALIPAY, "Can't jump to Alipay donate page, You can do it manually by transfer to account: " + Constant.AUTHOR_ALIPAY);
+                return tr("调用支付宝捐赠页失败, 您可以手动转账捐赠哦, 账号: " + Constant.AUTHOR_ALIPAY, "調用支付寶捐贈頁失敗, 您可以手動轉賬捐贈哦, 帳號: " + Constant.AUTHOR_ALIPAY, "Can't jump to Alipay donate page, You can do it manually by transfer to account: " + Constant.AUTHOR_ALIPAY);
             case R.id.toast_goto_donate_page_fail_wechat:
-                return tr("调用微信捐赠页失败, 您可以手动转账捐赠哦, 帐号: " + Constant.AUTHOR_WECHAT, "調用微信捐贈頁失敗, 您可以手動轉賬捐贈哦, 帳號: " + Constant.AUTHOR_WECHAT, "Can't jump to WeChat donate page, You can do it manually by transfer to account: " + Constant.AUTHOR_WECHAT);
+                return tr("调用微信捐赠页失败, 您可以手动转账捐赠哦, 账号: " + Constant.AUTHOR_WECHAT, "調用微信捐贈頁失敗, 您可以手動轉賬捐贈哦, 帳號: " + Constant.AUTHOR_WECHAT, "Can't jump to WeChat donate page, You can do it manually by transfer to account: " + Constant.AUTHOR_WECHAT);
             case R.id.toast_goto_donate_page_fail_qq:
-                return tr("调用QQ捐赠页失败, 您可以手动转账捐赠哦, 帐号: " + Constant.AUTHOR_QQ, "調用QQ捐贈頁失敗, 您可以手動轉賬捐贈哦, 帳號: " + Constant.AUTHOR_QQ, "Can't jump to QQ donate page, You can do it manually by transfer to account: " + Constant.AUTHOR_QQ);
+                return tr("调用QQ捐赠页失败, 您可以手动转账捐赠哦, 账号: " + Constant.AUTHOR_QQ, "調用QQ捐贈頁失敗, 您可以手動轉賬捐贈哦, 帳號: " + Constant.AUTHOR_QQ, "Can't jump to QQ donate page, You can do it manually by transfer to account: " + Constant.AUTHOR_QQ);
             case R.id.toast_need_qq_7_2_5:
                 return tr("您的QQ版本过低, 不支持指纹功能, 请升级至7.2.5以上的版本", "您的QQ版本過低, 不支持指紋功能, 請升級至7.2.5以上的版本", "Your QQ version is too low, does not support the fingerprint function, please upgrade to version 7.2.5 and above");
+            case R.id.toast_start_logging:
+                return tr("请开始你的表演, 日志已开始记录\n日志路径: %s", "請開始你的表演, 日誌已開始記錄\n日誌路徑: %s", "Star logging\nlog path: %s");
+            case R.id.toast_stop_logging:
+                return tr("表演结束, 请将日志文件分享给开发者\n日志路径: %s", "表演结束, 请将日志文件分享给开发者\n日誌路徑: %s", "Stop logging\nlog path: %s");
             case R.id.template:
                 return tr("", "", "");
         }

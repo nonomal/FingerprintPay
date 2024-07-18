@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
@@ -36,10 +37,10 @@ import com.surcumference.fingerprint.util.drawable.XDrawable;
  * Created by Jason on 2017/9/9.
  */
 
-public abstract class DialogFrameLayout extends FrameLayout implements DialogInterface.OnDismissListener, DialogInterface.OnShowListener {
+public abstract class DialogFrameLayout<T extends DialogFrameLayout> extends FrameLayout implements DialogInterface.OnDismissListener, DialogInterface.OnShowListener {
 
     private OnDismissListener mDismissListener;
-    private OnShowListener mShowListener;
+    private OnShowListener<T> mShowListener;
     private DialogInterface.OnClickListener mOnNeutralButtonClickListener;
     private DialogInterface.OnClickListener mOnNegativeButtonClickListener;
     private DialogInterface.OnClickListener mOnPositiveButtonClickListener;
@@ -92,51 +93,51 @@ public abstract class DialogFrameLayout extends FrameLayout implements DialogInt
 
     @Override
     public void onShow(DialogInterface dialog) {
-        OnShowListener listener = mShowListener;
+        OnShowListener<T> listener = mShowListener;
         if (listener != null) {
-            listener.onShow(this);
+            listener.onShow((T)this);
         }
         Umeng.onResume(getContext());
     }
 
-    public DialogFrameLayout withOnDismissListener(OnDismissListener listener) {
+    public T withOnDismissListener(OnDismissListener listener) {
         mDismissListener = listener;
-        return this;
+        return (T)this;
     }
 
-    public DialogFrameLayout withOnShowListener(OnShowListener listener) {
+    public T withOnShowListener(OnShowListener<T> listener) {
         mShowListener = listener;
-        return this;
+        return (T)this;
     }
 
-    public DialogFrameLayout withOnNeutralButtonClickListener(DialogInterface.OnClickListener listener) {
+    public T withOnNeutralButtonClickListener(DialogInterface.OnClickListener listener) {
         mOnNeutralButtonClickListener = listener;
-        return this;
+        return (T)this;
     }
 
-    public DialogFrameLayout withOnNegativeButtonClickListener(DialogInterface.OnClickListener listener) {
+    public T withOnNegativeButtonClickListener(DialogInterface.OnClickListener listener) {
         mOnNegativeButtonClickListener = listener;
-        return this;
+        return (T)this;
     }
 
-    public DialogFrameLayout withOnPositiveButtonClickListener(DialogInterface.OnClickListener listener) {
+    public T withOnPositiveButtonClickListener(DialogInterface.OnClickListener listener) {
         mOnPositiveButtonClickListener = listener;
-        return this;
+        return (T)this;
     }
 
-    public DialogFrameLayout withNeutralButtonText(String text) {
+    public T withNeutralButtonText(String text) {
         mNeutralButtonText = text;
-        return this;
+        return (T)this;
     }
 
-    public DialogFrameLayout withNegativeButtonText(String text) {
+    public T withNegativeButtonText(String text) {
         mNegativeButtonText = text;
-        return this;
+        return (T)this;
     }
 
-    public DialogFrameLayout withPositiveButtonText(String text) {
+    public T withPositiveButtonText(String text) {
         mPositiveButtonText = text;
-        return this;
+        return (T)this;
     }
 
     public String getDialogTitle() {
@@ -151,8 +152,9 @@ public abstract class DialogFrameLayout extends FrameLayout implements DialogInt
     /**
      * @return pixel
      */
-    public int dialogWindowHorizontalInsets () {
-        return DpUtils.dip2px(getContext(), 4);
+    public Rect dialogWindowInset() {
+        int padding = DpUtils.dip2px(getContext(), 4);
+        return new Rect(padding, padding, padding, padding);
     }
 
     private TextView createTitleTextView() {
@@ -325,8 +327,8 @@ public abstract class DialogFrameLayout extends FrameLayout implements DialogInt
         GradientDrawable shape =  new GradientDrawable();
         shape.setCornerRadius(DpUtils.dip2px(getContext(), 10));
         shape.setColor(0xFFF5F5F5);
-        int paddingH = dialogWindowHorizontalInsets();
-        return new InsetDrawable(shape, paddingH, 0, paddingH, 0);
+        Rect inset = dialogWindowInset();
+        return new InsetDrawable(shape, inset.left, inset.top, inset.right, inset.bottom);
     }
 
 }

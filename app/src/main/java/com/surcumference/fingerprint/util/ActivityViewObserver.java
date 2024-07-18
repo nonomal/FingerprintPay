@@ -11,7 +11,10 @@ import com.surcumference.fingerprint.util.log.L;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 public class ActivityViewObserver {
 
@@ -19,6 +22,10 @@ public class ActivityViewObserver {
     private boolean mRunning = false;
     private String mViewIdentifyType;
     private String[] mViewIdentifyTexts;
+
+    private IActivityViewFinder mIActivityViewFinder;
+
+    private boolean mWatchActivityViewOnly = false;
 
     public ActivityViewObserver(Activity weakRefActivity) {
         this.mActivityRef = new WeakReference<>(weakRefActivity);
@@ -32,8 +39,18 @@ public class ActivityViewObserver {
         this.mViewIdentifyTexts = viewIdentifyTexts;
     }
 
+    public void setActivityViewFinder(IActivityViewFinder viewFinder) {
+        this.mIActivityViewFinder = viewFinder;
+    }
+
+    public void setWatchActivityViewOnly(boolean on) {
+        this.mWatchActivityViewOnly = on;
+    }
+
     public void start(long loopMSec, IActivityViewListener listener) {
-        if (TextUtils.isEmpty(this.mViewIdentifyType) &&  (mViewIdentifyTexts == null || mViewIdentifyTexts.length == 0)) {
+        if (TextUtils.isEmpty(this.mViewIdentifyType)
+                && (mViewIdentifyTexts == null || mViewIdentifyTexts.length == 0)
+                && mIActivityViewFinder == null) {
             throw new IllegalArgumentException("Error: ViewIdentifyType or ViewIdentifyTexts not set");
         }
         if (mRunning) {
@@ -71,7 +88,9 @@ public class ActivityViewObserver {
         }
 
         List<View> viewList = new ArrayList<>();
-        List<View> decorViewList = ViewUtils.getWindowManagerViews();
+        List<View> decorViewList = mWatchActivityViewOnly
+                ? Collections.singletonList(activity.getWindow().getDecorView())
+                : ViewUtils.getWindowManagerViews();
         for (View decorView : decorViewList) {
             if (decorView instanceof ViewGroup) {
             } else {
@@ -95,9 +114,17 @@ public class ActivityViewObserver {
                     }
                 }
             }
+            IActivityViewFinder viewFinder = mIActivityViewFinder;
+            if (viewFinder != null) {
+                viewFinder.find(viewList);
+                if (viewList.size() > 0) {
+                    break;
+                }
+            }
         }
         if (viewList.size() > 0) {
-            for (View targetView : viewList) {
+            Set<View> viewLinkedHashSet = new LinkedHashSet<>(viewList);
+            for (View targetView : viewLinkedHashSet) {
                 if (ViewUtils.isViewVisibleInScreen(targetView.getRootView())) {
                     onViewFounded(listener, targetView);
                     // 好像是故意不加的
@@ -118,5 +145,9 @@ public class ActivityViewObserver {
 
     public interface IActivityViewListener {
         void onViewFounded(ActivityViewObserver observer, View view);
+    }
+
+    public interface IActivityViewFinder {
+        void find(List<View> outViewList);
     }
 }

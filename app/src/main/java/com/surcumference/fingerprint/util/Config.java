@@ -34,7 +34,7 @@ public class Config {
         if (mCache == null) {
             SharedPreferences sharedPreferences = context.getSharedPreferences(BuildConfig.APPLICATION_ID + ".settings", Context.MODE_PRIVATE);
             String deviceId = Settings.System.getString(context.getContentResolver(), Settings.System.ANDROID_ID);
-            int passwordEncKey = deviceId.hashCode();
+            int passwordEncKey = String.valueOf(deviceId).hashCode();
             SharedPreferences mainAppSharePreference;
             try {
                 mainAppSharePreference = XPreferenceProvider.getRemoteSharedPreference(context);
@@ -56,7 +56,7 @@ public class Config {
     }
 
     @Nullable
-    public String getPassword() {
+    public String getPasswordEncrypted() {
         String enc = mCache.sharedPreferences.getString("password", null);
         if (TextUtils.isEmpty(enc)) {
             return null;
@@ -64,17 +64,47 @@ public class Config {
         return AESUtils.decrypt(enc, String.valueOf(mCache.passwordEncKey));
     }
 
-    public void setPassword(String password) {
+    public void setPasswordEncrypted(String password) {
         String enc = AESUtils.encrypt(password, String.valueOf(mCache.passwordEncKey));
         mCache.sharedPreferences.edit().putString("password", enc).apply();
     }
 
+    @Nullable
+    public String getPasswordIV() {
+        String enc = mCache.sharedPreferences.getString("password_iv", null);
+        if (TextUtils.isEmpty(enc)) {
+            return null;
+        }
+        return AESUtils.decrypt(enc, String.valueOf(mCache.passwordEncKey));
+    }
+
+    public void setPasswordIV(String iv) {
+        if (TextUtils.isEmpty(iv)) {
+            mCache.sharedPreferences.edit().remove("password_iv").apply();
+            return;
+        }
+        String enc = AESUtils.encrypt(iv, String.valueOf(mCache.passwordEncKey));
+        mCache.sharedPreferences.edit().putString("password_iv", enc).apply();
+    }
+
+    public String getPasswordEncKey() {
+        return String.valueOf(mCache.passwordEncKey);
+    }
+
     public boolean isShowFingerprintIcon() {
-        return mCache.sharedPreferences.getBoolean("fingerprint_icon", true);
+        return mCache.sharedPreferences.getBoolean("fingerprint_icon", false);
     }
 
     public void setShowFingerprintIcon(boolean on) {
         mCache.sharedPreferences.edit().putBoolean("fingerprint_icon", on).apply();
+    }
+
+    public boolean isUseBiometricApi() {
+        return mCache.sharedPreferences.getBoolean("biometric_api", false);
+    }
+
+    public void setUseBiometricApi(boolean on) {
+        mCache.sharedPreferences.edit().putBoolean("biometric_api", on).apply();
     }
 
     public void setSkipVersion(String version) {
@@ -102,6 +132,11 @@ public class Config {
             agree = mCache.sharedPreferences.getBoolean("license_agree", false);
         }
         return agree;
+    }
+
+    public void commit() {
+        mCache.sharedPreferences.edit().commit();
+        mCache.mainAppSharedPreferences.edit().commit();
     }
 
     private class ObjectCache {

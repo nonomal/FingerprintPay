@@ -2,18 +2,19 @@ package com.surcumference.fingerprint.plugin.magisk;
 
 import android.app.Activity;
 import android.app.Application;
-import android.os.Bundle;
 import android.text.TextUtils;
 
 import androidx.annotation.Keep;
 
+import com.hjq.toast.Toaster;
 import com.surcumference.fingerprint.BuildConfig;
+import com.surcumference.fingerprint.Constant;
 import com.surcumference.fingerprint.bean.PluginTarget;
 import com.surcumference.fingerprint.bean.PluginType;
-import com.surcumference.fingerprint.network.updateCheck.UpdateFactory;
+import com.surcumference.fingerprint.network.update.UpdateFactory;
 import com.surcumference.fingerprint.plugin.PluginApp;
-import com.surcumference.fingerprint.plugin.QQBasePlugin;
-import com.surcumference.fingerprint.util.ActivityLifecycleCallbacks;
+import com.surcumference.fingerprint.plugin.PluginFactory;
+import com.surcumference.fingerprint.plugin.inf.IAppPlugin;
 import com.surcumference.fingerprint.util.ApplicationUtils;
 import com.surcumference.fingerprint.util.Task;
 import com.surcumference.fingerprint.util.Umeng;
@@ -23,7 +24,7 @@ import com.surcumference.fingerprint.util.log.L;
  * Created by Jason on 2017/9/8.
  */
 
-public class QQPlugin extends QQBasePlugin {
+public class QQPlugin {
 
     /**
      * >= 4.2.0
@@ -47,7 +48,8 @@ public class QQPlugin extends QQBasePlugin {
     public static void init(String niceName) {
         try {
             Application application = ApplicationUtils.getApplication();
-            QQPlugin plugin = new QQPlugin();
+            IAppPlugin plugin = PluginFactory.loadPlugin(application, Constant.PACKAGE_NAME_QQ);
+            Toaster.init(application);
             /**
              * FIX java.lang.NullPointerException: Attempt to invoke virtual method 'java.lang.Object java.lang.ref.WeakReference.get()' on a null object reference
              *     at com.tencent.mqq.shared_file_accessor.n.<init>(Unknown Source)
@@ -67,8 +69,8 @@ public class QQPlugin extends QQBasePlugin {
             // for 8.8.83
             boolean isToolProcess = niceName.endsWith(":tool");
             if (isToolProcess) {
-                int versionCode = plugin.getQQVersionCode(application);
-                if (versionCode >= QQ_VERSION_CODE_8_8_83) {
+                int versionCode = plugin.getVersionCode(application);
+                if (versionCode >= Constant.QQ.QQ_VERSION_CODE_8_8_83) {
                     Activity activity = ApplicationUtils.getCurrentActivity();
                     L.d("tool first activity", activity);
                     if (activity != null) {
@@ -79,22 +81,7 @@ public class QQPlugin extends QQBasePlugin {
                 }
             }
 
-            application.registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
-                @Override
-                public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
-                    plugin.onActivityCreated(activity);
-                }
-
-                @Override
-                public void onActivityResumed(Activity activity) {
-                    plugin.onActivityResumed(activity);
-                }
-
-                @Override
-                public void onActivityPaused(Activity activity) {
-                    plugin.onActivityPaused(activity);
-                }
-            });
+            application.registerActivityLifecycleCallbacks(plugin);
         } catch (Exception e) {
             L.e(e);
         }

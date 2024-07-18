@@ -42,16 +42,29 @@ public class WeChatPayDialog {
                             payDialog.passwordLayout = (ViewGroup)view;
                         }
                     } else if (view.getClass().getName().endsWith(".TenpaySecureEditText")) {
-                        L.d("密码输入框:" + view);
+                        L.d("密码输入框:" + ViewUtils.getViewInfo(view)
+                                + " shown: " + ViewUtils.isShown(view)
+                                + " shownInScreen: " + ViewUtils.isShownInScreen(view)
+                                + " view instanceof EditText: " + (view instanceof EditText)
+                        );
+                        //charge amount EditText
                         if (versionCode >= Constant.WeChat.WECHAT_VERSION_CODE_8_0_30)
-                        if (view.getTag() != null) {
-                            continue;
-                        }
+                            if (view.getTag() != null) {
+                                continue;
+                            }
                         if (view instanceof EditText) {
+                            if (payDialog.inputEditText != null) {
+                                if (!ViewUtils.isShownInScreen(view)) {
+                                    continue;
+                                }
+                            }
                             payDialog.inputEditText = (EditText)view;
                         }
                     } else if (view.getClass().getName().endsWith(".MyKeyboardWindow")) {
-                        L.d("密码键盘:" + ViewUtils.getViewInfo(view) + " shown: " + ViewUtils.isShown(view) + " shownInScreen: " + ViewUtils.isShownInScreen(view));
+                        L.d("密码键盘:" + ViewUtils.getViewInfo(view)
+                                + " shown: " + ViewUtils.isShown(view)
+                                + " shownInScreen: " + ViewUtils.isShownInScreen(view)
+                                + " attachToParent: " + (view.getParent() != null));
                         if (view.getParent() != null) {
                             payDialog.keyboardViews.add((View)view.getParent());
                         }
